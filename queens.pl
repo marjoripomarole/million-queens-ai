@@ -24,7 +24,6 @@ numberOfAttacks([], _, _, _, 0).
 numberOfAttacks([Y1|Ys], X1, X2, Y2, Count) :-
   X #= X1 + 1,
   numberOfAttacks(Ys, X, X2, Y2, CountOthers),
-  print(X1), print(Y1), print(X2), print(Y2),
   attacks(X1, Y1, X2, Y2, C),
   Count #= CountOthers + C.
 
