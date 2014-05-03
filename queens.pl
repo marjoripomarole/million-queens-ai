@@ -51,7 +51,10 @@ findMaxConflict(B, I) :-
   indexOf(Maxes, M, I).
 
  % Move that queen to the row with the least possible conflicts.
- % newBoardWithMovedRow(B, I, newB) :- B.
+newBoardWithMovedRow(B, I, newB) :- B.
+  % get attack counts on all Y of that index
+  % find min index
+  % create new board with index moved to new index
 
 minConflict(B) :-
  solution(B);           % DONE
