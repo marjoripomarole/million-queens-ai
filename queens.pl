@@ -1,5 +1,11 @@
 :- use_module(library(clpfd)).
 
+
+pickRandomly(Count, From, To) :-
+  random_permutation(From, Scrambled),
+  append(To, _, Scrambled),
+  length(To, Count).
+
 max([X], X).
 max([X|Xs], X):- max(Xs,Y), X >=Y.
 max([X|Xs], N):- max(Xs,N), N > X.
@@ -55,11 +61,13 @@ putMax(B, [Y1|Ys], X1, [Count|ArrayOthers]) :-
 
  % Find the queen in the board with the max number of conflicts.
 findMaxConflict([], 0).
-% findMaxConflict([_], 0).
+findMaxConflict([_], 0).
 findMaxConflict(B, I) :-
   putMax(B, B, 1, Maxes),
   max(Maxes, M),
-  indexOf(Maxes, M, I).
+  reverse(Maxes, CR, []),
+  indexes(CR, M, _, Indexes),
+  pickRandomly(1, Indexes, [I]).
 
 numberOfAttacksWithY([], _, _, 0).
 numberOfAttacksWithY([X1/Y1|Qs], X2, Y2, Count) :-
@@ -87,22 +95,17 @@ reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
 newBoardWithMinConflict(B, I, NextB) :-
   % removes element from list at index I
   nth0(I, B, X/Y, NewB),
-  write('New B '), write(NewB), nl,
   length(B, L),
   % get attack counts on all Y of that index
   getAttackCounts(NewB, X, L, CountsR, I1),
   reverse(CountsR,Counts,[]),
-  write('Counts '), write(Counts), nl,
   % find min index
   min_list(Counts, M),
   reverse(Counts, CR, []),
-  write('CR '), write(CR), nl,
   indexes(CR, M, _, Indexes),
-  write('Indexes '), write(Indexes), nl,
   delete(Indexes, I, Indexes1),
   min_list(Indexes1, NewIndex),
   NewIndex1 #= NewIndex + 1,
-  write('NewIndex '), write(NewIndex1), nl,
   createNewBoard(B, I, X/NewIndex1, NextB).
 
 boardWithXAndY([], [], _).
@@ -118,11 +121,11 @@ minConflict(B) :- solution(B), write(B), !.
 minConflict(B) :-
   findMaxConflict(B, I), % Index start from 0
   write('I Max '), write(I), nl,
+  write('B '), write(B), nl,
   boardWithXAndY(B, BXY, 1),
-  write('BXY '), write(BXY), nl,
   newBoardWithMinConflict(BXY, I, NewB),
   boardWithoutXAndY(NewB, NewB1),
-  write('NewB1 '), write(NewB1), nl,
+  write('New B '), write(NewB1), nl,
   sleep(1),
   minConflict(NewB1).
  
