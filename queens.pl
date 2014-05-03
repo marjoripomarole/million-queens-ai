@@ -1,8 +1,17 @@
 :- use_module(library(clpfd)).
 
+max([X], X).
+max([X|Xs], X):- max(Xs,Y), X >=Y.
+max([X|Xs], N):- max(Xs,N), N > X.
+
+indexOf([Y|_], Y, 0):- !.
+indexOf([_|Ys], Y, I):-
+  indexOf(Ys, Y, I1),
+  !,
+  I is I1+1.
+
 constraint([], _, _).
 constraint([Y1|Ys], Y2, X) :-
-  print(X),
   Y1 #\= Y2,
   abs(Y2 - Y1) #\= X,
   X1 #= X + 1,
@@ -27,18 +36,26 @@ numberOfAttacks([Y1|Ys], X1, X2, Y2, Count) :-
   attacks(X1, Y1, X2, Y2, C),
   Count #= CountOthers + C.
 
+putMax(_, [], _, []).
+putMax(B, [Y1|Ys], X1, [Count|ArrayOthers]) :-
+  XN #= X1 + 1,
+  putMax(B, Ys, XN, ArrayOthers),
+  numberOfAttacks(B, 1, X1, Y1, Count).
+
  % Find the queen in the board with the max number of conflicts.
 findMaxConflict([], 0).
 findMaxConflict([_], 0).
 findMaxConflict(B, I) :-
-  numberOfAttacks(B, 1, 1, 1, Count).
+  putMax(B, B, 1, Maxes),
+  max(Maxes, M),
+  indexOf(Maxes, M, I).
 
  % Move that queen to the row with the least possible conflicts.
-newBoardWithMovedRow(B, I, newB) :- B.
+ % newBoardWithMovedRow(B, I, newB) :- B.
 
 minConflict(B) :-
- solution(B);
- findMaxConflict(B, I),
+ solution(B);           % DONE
+ findMaxConflict(B, I), % DONE
  newBoardWithMovedRow(B, I, newB),
  minConflict(newB).
  
