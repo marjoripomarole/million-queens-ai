@@ -14,13 +14,25 @@ solution([Q|B]) :-
   solution(B).
 
 % count how many attacks this queen has
-numberOfAttacks([], _, 0).
-numberOfAttacks(B, Q, Count).
+attacks(X, Y, X, Y, 0) :- !.
+attacks(_, Y1, _, Y2, 1) :- Y1 #= Y2, !.
+attacks(X1, Y1, X2, Y2, 1) :- abs(Y2 - Y1) #= abs(X2 - X1), !.
+attacks(X1, Y1, X2, Y2, 1) :- abs(Y2 - Y1) #= abs(X1 - X2), !.
+attacks(_, _, _, _, 0).
+
+numberOfAttacks([], _, _, _, 0).
+numberOfAttacks([Y1|Ys], X1, X2, Y2, Count) :-
+  X #= X1 + 1,
+  numberOfAttacks(Ys, X, X2, Y2, CountOthers),
+  print(X1), print(Y1), print(X2), print(Y2),
+  attacks(X1, Y1, X2, Y2, C),
+  Count #= CountOthers + C.
 
  % Find the queen in the board with the max number of conflicts.
 findMaxConflict([], 0).
-findMaxConflict([_], 1).
-findMaxConflict(B, I) :- I is 1.
+findMaxConflict([_], 0).
+findMaxConflict(B, I) :-
+  numberOfAttacks(B, 1, 1, 1, Count).
 
  % Move that queen to the row with the least possible conflicts.
 newBoardWithMovedRow(B, I, newB) :- B.
@@ -47,16 +59,3 @@ solveQueens(N) :-
   generateInitialBoard(N, B), 
   print(B),
   minConflict(B).
-  
-
-/***
-del(X, [X|T], T).
-del(X, [Y|T], [Y|T1]) :- del(X, T, T1).
-
-remove(A, B, C) :- del(A,B,C).
-remove(A, B, B) :- not(member(A,B)).
-
-removeAll([H|T], LPos, L) :- remove(H, LPos, LPos_H), 
-           removeAll(T, LPos_H, L), !.
-removeAll([], L, L). 
-***/
