@@ -138,15 +138,30 @@ solveQueens(N, Result, Steps) :-
 
 solveNQueensXTimes(_, 0, []).
 solveNQueensXTimes(N, X, [Steps|Rest]) :-
-  solveQueens(N, _, Steps),
-  X1 is X - 1,
-  solveNQueensXTimes(N, X1, Rest), !.
+  (
+    solveQueens(N, _, Steps) ->
+      X1 is X - 1,
+      solveNQueensXTimes(N, X1, Rest), !
+
+    ; Steps is 0,
+      X1 is X - 1,
+      solveNQueensXTimes(N, X1, Rest), !
+  ).
 
 medianSolveNQueensXTimes(N, X, M) :-
   solveNQueensXTimes(N, X, L),
   median(L, M).
 
-median(L, Z) :-
+averageSolveNQueensXTimes(N, X, M) :-
+  solveNQueensXTimes(N, X, L),
+  average(L, M).
+
+average(L, A) :-
+    sum_list(L, S),
+    length(L, Length),
+    A is S / Length.
+
+median(L, M) :-
     length(L, Length),
     I is Length div 2,
     Rem is Length rem 2,
@@ -154,4 +169,4 @@ median(L, Z) :-
     maplist(sumlist, [[I, Rem], [I, 1]], Mid),
     maplist(nth1, Mid, [S, S], X),
     sumlist(X, Y),
-    Z is Y/2.
+    M is Y/2.
