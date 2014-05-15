@@ -6,10 +6,6 @@ pickRandomly(Count, From, To) :-
   append(To, _, Scrambled),
   length(To, Count).
 
-max([X], X).
-max([X|Xs], X):- max(Xs,Y), X >=Y.
-max([X|Xs], N):- max(Xs,N), N > X.
-
 indexOf([Y|_], Y, 0):- !.
 indexOf([_|Ys], Y, I):-
   indexOf(Ys, Y, I1),
@@ -17,7 +13,6 @@ indexOf([_|Ys], Y, I):-
   I is I1+1.
 
 indexes([Y], Y, 0, [0]) :- !.
-indexes([X], Y, 0, []) :- !.
 indexes([Y|Ys], Y, I, [I|Rest]):-
   indexes(Ys, Y, I1, Rest),
   !,
@@ -39,7 +34,7 @@ solution([Q|B]) :-
   constraint(B, Q, 1),
   solution(B).
 
-% count how many attacks this queen has
+% See if queen attacks one another or not. 0 if no, 1 if yes
 attacks(X, Y, X, Y, 0) :- !.
 attacks(_, Y1, _, Y2, 1) :- Y1 #= Y2, !.
 attacks(X1, Y1, X2, Y2, 1) :- abs(Y2 - Y1) #= abs(X2 - X1), !.
@@ -53,7 +48,7 @@ numberOfAttacks([Y1|Ys], X1, X2, Y2, Count) :-
   attacks(X1, Y1, X2, Y2, C),
   Count #= CountOthers + C.
 
-putMax(_, [], _, []).
+putMax(_, [], _, []) :- !.
 putMax(B, [Y1|Ys], X1, [Count|ArrayOthers]) :-
   XN #= X1 + 1,
   putMax(B, Ys, XN, ArrayOthers),
@@ -64,7 +59,7 @@ findMaxConflict([], 0).
 findMaxConflict([_], 0).
 findMaxConflict(B, I) :-
   putMax(B, B, 1, Maxes),
-  max(Maxes, M),
+  max_list(Maxes, M),
   reverse(Maxes, CR, []),
   indexes(CR, M, _, Indexes),
   pickRandomly(1, Indexes, [I]).
@@ -135,7 +130,10 @@ minConflict(B, Result, Steps, Acc) :-
   newBoardWithMinConflict(BXY, I, NewB),
   boardWithoutXAndY(NewB, NewB1),
   Acc1 is Acc + 1,
+  Acc1 #=< 50,
+  write(Acc1), nl,
   minConflict(NewB1, Result, Steps, Acc1).
+  %write(Acc1), nl, write(NewB1), nl.
  
 goodStart([], _, _).
 goodStart([F], N, _) :- F is N.
@@ -152,4 +150,5 @@ generateInitialBoard(N, B) :-
 % Returns solution for NxN board
 solveQueens(N, Result, Steps) :-
   generateInitialBoard(N, B), 
-  minConflict(B, Result, Steps, 0).
+  write('generated board'), nl,
+  minConflict(B, Result, Steps, 0), !.
