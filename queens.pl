@@ -12,17 +12,6 @@ indexOf([_|Ys], Y, I):-
   !,
   I is I1+1.
 
-indexes([Y], Y, 0, [0]) :- !.
-indexes([X], Y, 0, []) :- !.
-indexes([Y|Ys], Y, I, [I|Rest]):-
-  indexes(Ys, Y, I1, Rest),
-  !,
-  I is I1 + 1.
-indexes([_|Ys], Y, I, L):-
-  indexes(Ys, Y, I1, L),
-  !,
-  I is I1 + 1.
-
 constraint([], _, _).
 constraint([Y1|Ys], Y2, X) :-
   Y1 #\= Y2,
@@ -105,8 +94,7 @@ newBoardWithMinConflict(OriginalBoard, I, NextB) :-
   reverse(CountsR,Counts,[]),
   % find min index
   min_list(Counts, M),
-  reverse(Counts, CountsReverse, []),
-  indexes(CountsReverse, M, _, Indexes),
+  findall(Goal, nth0(Goal, Counts, M), Indexes),
   min_list(Indexes, NewIndex),
   NewIndex1 #= NewIndex + 1,
   createNewBoard(OriginalBoard, I, X/NewIndex1, NextB).
@@ -131,7 +119,7 @@ minConflict(B, Result, Steps, Acc) :-
   boardWithoutXAndY(NewB, NewB1),
   Acc1 is Acc + 1,
   Acc1 #=< 50,
-  write(Acc1), nl,
+  % write(Acc1), nl,
   minConflict(NewB1, Result, Steps, Acc1).
   %write(Acc1), nl, write(NewB1), nl.
  
