@@ -65,7 +65,8 @@ getAttackCounts(B, X, Y, [C|CountsRest], YToSkip) :-
   Y1 is Y - 1,
   ( 
     Y is YToSkip -> 
-      C is 9999999,
+      C is 9999999, % Setting this number really high because it should never
+                    % be picked
       getAttackCounts(B, X, Y1, CountsRest, YToSkip)
 
     ; 
@@ -79,10 +80,6 @@ createNewBoard([H|T], I, X, [H|R]):-
   I1 is I-1,
   createNewBoard(T, I1, X, R).
 
-% Reverse a list
-reverse([],Z,Z).
-reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
-
 % Moves queen at index I to the row with the least possible conflicts.
 % Works with X\Y representation.
 newBoardWithMinConflict(OriginalBoard, I, NextB) :-
@@ -91,12 +88,15 @@ newBoardWithMinConflict(OriginalBoard, I, NextB) :-
   length(OriginalBoard, Lenght),
   % get attack counts on each Y of that Queen.
   getAttackCounts(BoardWithoutI, X, Lenght, CountsR, Y),
-  reverse(CountsR,Counts,[]),
+  reverse(CountsR, Counts),
   % find min index
-  min_list(Counts, M),
-  findall(Goal, nth0(Goal, Counts, M), Indexes),
-  min_list(Indexes, NewIndex),
+  min_list(Counts, Min),
+  findall(Goal, nth0(Goal, Counts, Min), Indexes),
+  % min_list(Indexes, NewIndex),
+  pickRandomly(1, Indexes, [NewIndex]),
+  write('indexes '), write(Indexes), nl,
   NewIndex1 is NewIndex + 1,
+  write('index '), write(NewIndex1), nl,
   createNewBoard(OriginalBoard, I, X/NewIndex1, NextB).
 
 % Returns representation of the board with X\Y position
@@ -119,9 +119,7 @@ minConflict(B, Result, Steps, Acc) :-
   boardWithoutXAndY(NewB, NewB1),
   Acc1 is Acc + 1,
   Acc1 =< 100,
-  % write(Acc1), nl,
   minConflict(NewB1, Result, Steps, Acc1).
-  %write(Acc1), nl, write(NewB1), nl.
  
 goodStart([], _, _).
 goodStart([F], N, _) :- F is N.
