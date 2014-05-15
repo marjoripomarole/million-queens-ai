@@ -76,11 +76,18 @@ numberOfAttacksWithY([X1/Y1|Qs], X2, Y2, Count) :-
   Count #= CountOthers + C.
 
 getAttackCounts(_, _, 0, [], _).
-getAttackCounts(B, X, Y, [C|CountsRest], I) :-
+getAttackCounts(B, X, Y, [C|CountsRest], YToSkip) :-
   Y #> 0,
   Y1 #= Y - 1,
-  numberOfAttacksWithY(B, X, Y, C),
-  getAttackCounts(B, X, Y1, CountsRest, I).
+  ( 
+    Y is YToSkip -> 
+      C is 9999999,
+      getAttackCounts(B, X, Y1, CountsRest, YToSkip)
+
+    ; 
+      numberOfAttacksWithY(B, X, Y, C),
+      getAttackCounts(B, X, Y1, CountsRest, YToSkip)
+  ).
 
 createNewBoard([_|T], 0, X, [X|T]).
 createNewBoard([H|T], I, X, [H|R]):-
@@ -88,46 +95,47 @@ createNewBoard([H|T], I, X, [H|R]):-
   I1 is I-1,
   createNewBoard(T, I1, X, R).
 
+% Reverse a list
 reverse([],Z,Z).
 reverse([H|T],Z,Acc) :- reverse(T,Z,[H|Acc]).
 
-% Move that queen to the row with the least possible conflicts.
-newBoardWithMinConflict(B, I, NextB) :-
+% Moves queen at index I to the row with the least possible conflicts.
+% Works with X\Y representation.
+newBoardWithMinConflict(OriginalBoard, I, NextB) :-
   % removes element from list at index I
-  nth0(I, B, X/Y, NewB),
-  length(B, L),
-  % get attack counts on all Y of that index
-  getAttackCounts(NewB, X, L, CountsR, I1),
+  nth0(I, OriginalBoard, X/Y, BoardWithoutI),
+  length(OriginalBoard, Lenght),
+  % get attack counts on each Y of that Queen.
+  getAttackCounts(BoardWithoutI, X, Lenght, CountsR, Y),
   reverse(CountsR,Counts,[]),
   % find min index
   min_list(Counts, M),
-  reverse(Counts, CR, []),
-  indexes(CR, M, _, Indexes),
-  delete(Indexes, I, Indexes1),
-  min_list(Indexes1, NewIndex),
+  reverse(Counts, CountsReverse, []),
+  indexes(CountsReverse, M, _, Indexes),
+  min_list(Indexes, NewIndex),
   NewIndex1 #= NewIndex + 1,
-  createNewBoard(B, I, X/NewIndex1, NextB).
+  createNewBoard(OriginalBoard, I, X/NewIndex1, NextB).
 
+% Returns representation of the board with X\Y position
 boardWithXAndY([], [], _).
 boardWithXAndY([Y1|Ys], [I/Y1|BXY], I) :-
   I1 #= I + 1,
   boardWithXAndY(Ys, BXY, I1).
 
+% Returns representation of the board without X\Y
 boardWithoutXAndY([], []).
 boardWithoutXAndY([_/Y|Qs], [Y|BXY]) :-
   boardWithoutXAndY(Qs, BXY).
 
-minConflict(B) :- solution(B), write(B), !.
-minConflict(B) :-
+% Top level algorithm
+minConflict(B, B, Steps, Steps) :- solution(B), !.
+minConflict(B, Result, Steps, Acc) :-
   findMaxConflict(B, I), % Index start from 0
-  write('I Max '), write(I), nl,
-  write('B '), write(B), nl,
   boardWithXAndY(B, BXY, 1),
   newBoardWithMinConflict(BXY, I, NewB),
   boardWithoutXAndY(NewB, NewB1),
-  write('New B '), write(NewB1), nl,
-  sleep(1),
-  minConflict(NewB1).
+  Acc1 is Acc + 1,
+  minConflict(NewB1, Result, Steps, Acc1).
  
 goodStart([], _, _).
 goodStart([F], N, _) :- F is N.
@@ -135,13 +143,13 @@ goodStart([F,S | T], N, P) :-
   F is P, S is N,
   goodStart(T, N - 1, P + 1).
 
-% Creating a good starting board with N queens.
+% Returns a NxN board with a queen in each column and row
 generateInitialBoard(N, B) :-
   length(B, N),
   B ins 1..N,
   goodStart(B, N, 1).
  
-solveQueens(N) :-
+% Returns solution for NxN board
+solveQueens(N, Result, Steps) :-
   generateInitialBoard(N, B), 
-  write('Start'), write(B), nl,
-  minConflict(B).
+  minConflict(B, Result, Steps, 0).
