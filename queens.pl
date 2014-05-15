@@ -61,8 +61,7 @@ findMaxConflict([_], 0).
 findMaxConflict(B, I) :-
   putMax(B, B, 1, Maxes),
   max_list(Maxes, M),
-  reverse(Maxes, CR, []),
-  indexes(CR, M, _, Indexes),
+  findall(X, nth0(X, Maxes, M), Indexes),
   pickRandomly(1, Indexes, [I]).
 
 numberOfAttacksWithY([], _, _, 0).
