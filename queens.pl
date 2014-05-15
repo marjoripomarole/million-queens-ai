@@ -13,6 +13,7 @@ indexOf([_|Ys], Y, I):-
   I is I1+1.
 
 indexes([Y], Y, 0, [0]) :- !.
+indexes([X], Y, 0, []) :- !.
 indexes([Y|Ys], Y, I, [I|Rest]):-
   indexes(Ys, Y, I1, Rest),
   !,
