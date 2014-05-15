@@ -94,9 +94,7 @@ newBoardWithMinConflict(OriginalBoard, I, NextB) :-
   findall(Goal, nth0(Goal, Counts, Min), Indexes),
   % min_list(Indexes, NewIndex),
   pickRandomly(1, Indexes, [NewIndex]),
-  write('indexes '), write(Indexes), nl,
   NewIndex1 is NewIndex + 1,
-  write('index '), write(NewIndex1), nl,
   createNewBoard(OriginalBoard, I, X/NewIndex1, NextB).
 
 % Returns representation of the board with X\Y position
