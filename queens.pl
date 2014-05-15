@@ -16,7 +16,7 @@ constraint([], _, _).
 constraint([Y1|Ys], Y2, X) :-
   Y1 #\= Y2,
   abs(Y2 - Y1) #\= X,
-  X1 #= X + 1,
+  X1 is X + 1,
   constraint(Ys, Y2, X1).
 
 solution([]).
@@ -33,14 +33,14 @@ attacks(_, _, _, _, 0).
 
 numberOfAttacks([], _, _, _, 0).
 numberOfAttacks([Y1|Ys], X1, X2, Y2, Count) :-
-  X #= X1 + 1,
+  X is X1 + 1,
   numberOfAttacks(Ys, X, X2, Y2, CountOthers),
   attacks(X1, Y1, X2, Y2, C),
-  Count #= CountOthers + C.
+  Count is CountOthers + C.
 
 putMax(_, [], _, []) :- !.
 putMax(B, [Y1|Ys], X1, [Count|ArrayOthers]) :-
-  XN #= X1 + 1,
+  XN is X1 + 1,
   putMax(B, Ys, XN, ArrayOthers),
   numberOfAttacks(B, 1, X1, Y1, Count).
 
@@ -62,7 +62,7 @@ numberOfAttacksWithY([X1/Y1|Qs], X2, Y2, Count) :-
 getAttackCounts(_, _, 0, [], _).
 getAttackCounts(B, X, Y, [C|CountsRest], YToSkip) :-
   Y #> 0,
-  Y1 #= Y - 1,
+  Y1 is Y - 1,
   ( 
     Y is YToSkip -> 
       C is 9999999,
@@ -96,13 +96,13 @@ newBoardWithMinConflict(OriginalBoard, I, NextB) :-
   min_list(Counts, M),
   findall(Goal, nth0(Goal, Counts, M), Indexes),
   min_list(Indexes, NewIndex),
-  NewIndex1 #= NewIndex + 1,
+  NewIndex1 is NewIndex + 1,
   createNewBoard(OriginalBoard, I, X/NewIndex1, NextB).
 
 % Returns representation of the board with X\Y position
 boardWithXAndY([], [], _).
 boardWithXAndY([Y1|Ys], [I/Y1|BXY], I) :-
-  I1 #= I + 1,
+  I1 is I + 1,
   boardWithXAndY(Ys, BXY, I1).
 
 % Returns representation of the board without X\Y
