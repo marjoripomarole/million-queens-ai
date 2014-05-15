@@ -118,7 +118,7 @@ minConflict(B, Result, Steps, Acc) :-
   newBoardWithMinConflict(BXY, I, NewB),
   boardWithoutXAndY(NewB, NewB1),
   Acc1 is Acc + 1,
-  Acc1 #=< 50,
+  Acc1 =< 100,
   % write(Acc1), nl,
   minConflict(NewB1, Result, Steps, Acc1).
   %write(Acc1), nl, write(NewB1), nl.
@@ -138,5 +138,24 @@ generateInitialBoard(N, B) :-
 % Returns solution for NxN board
 solveQueens(N, Result, Steps) :-
   generateInitialBoard(N, B), 
-  write('generated board'), nl,
   minConflict(B, Result, Steps, 0), !.
+
+solveNQueensXTimes(_, 0, []).
+solveNQueensXTimes(N, X, [Steps|Rest]) :-
+  solveQueens(N, _, Steps),
+  X1 is X - 1,
+  solveNQueensXTimes(N, X1, Rest), !.
+
+medianSolveNQueensXTimes(N, X, M) :-
+  solveNQueensXTimes(N, X, L),
+  median(L, M).
+
+median(L, Z) :-
+    length(L, Length),
+    I is Length div 2,
+    Rem is Length rem 2,
+    msort(L, S),
+    maplist(sumlist, [[I, Rem], [I, 1]], Mid),
+    maplist(nth1, Mid, [S, S], X),
+    sumlist(X, Y),
+    Z is Y/2.
